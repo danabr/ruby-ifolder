@@ -1,0 +1,27 @@
+A tool for interacting with ifolder, without having to install mono and
+installing from source.
+
+The tool interacts with the ifolder web service, which essentialy makes it a
+hack.
+
+How to use:
+$ ifolder
+
+First time you run the application you will be asked to specify the URL to the
+ifolder server.
+
+List all ifolders
+$ ifolder ls
+
+Browse an ifolder
+$ ifolder ls path
+
+Download a file
+$ ifolder download path
+
+Downloaded files are placed in ~/ifolder, and with the same subpath as in
+the ifolder itself. Once a file has been downloaded, it is considered tracked.
+That means that it will be automatically synced when you run:
+$ ifolder synch
+
+The synchronization tool will tell you about any errors (such as conflicts).
