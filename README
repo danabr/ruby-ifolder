@@ -2,7 +2,10 @@ A tool for interacting with ifolder, without having to install mono and
 installing from source.
 
 The tool interacts with the ifolder web service.
-hack.
+
+NOTE: This is a work in progress and should not be used for anything serious.
+      For example, credentials are stored in plain text to ease development
+      and testing.
 
 How to use:
 $ ifolder

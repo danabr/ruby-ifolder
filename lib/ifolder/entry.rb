@@ -34,7 +34,7 @@ module IFolder
   end
 
   class FileEntry <  Entry
-    CHUNK_SIZE = 1024
+    CHUNK_SIZE = 1024*1024
 
     def initialize(ifolder_id, id, path, size)
       super
