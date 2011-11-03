@@ -6,10 +6,8 @@ module IFolder
   class RemoteRepository
     MAX_IFOLDERS = 100
 
-    def initialize(config)
-      u = config.get(:credentials)[:username]
-      p = config.get(:credentials)[:password]
-      @connection = Connection.new(config.get(:server), u, p)
+    def initialize(server, username, password)
+      @connection = Connection.new(server, username, password)
     end
 
     def list

@@ -15,11 +15,11 @@ module IFolder
 
     desc "configure", "Configure which ifolder server to use"
     def configure
-      unless @config.get(:server).nil?
-        say "Warning! Replacing old server URL: #{@config.get(:server)}", Color::YELLOW
+      unless @config[:server].nil?
+        say "Warning! Replacing old server URL: #{@config[:server]}", Color::YELLOW
       end
-      server = ask("Server URL:")
-      @config.set(:server, server)
+      server = ask("Server domain name or IP:")
+      @config[:server] = server
     end
     default_task :configure
 
@@ -37,34 +37,38 @@ module IFolder
       login
       ifolder = @server.get(name)
       @local.mkdir(ifolder.name)
-      download_recursive(ifolder)
+      download_ifolder(ifolder)
     end
 
     private
-    def download_recursive(folder)
-      folder.entries.each do |entry|
+    def download_ifolder(ifolder)
+      entries = ifolder.entries
+      until entries.empty?
+        entry = entries.shift
         puts entry.path
         if entry.directory?
           @local.mkdir(entry.path)
-          download_recursive(entry)
-        else
+          entries += entry.entries
+        else 
           @local.write_file(entry.path) do |file|
             entry.content do |chunk|
               file.write(chunk)
             end
           end
         end
-      end 
+      end
     end
 
 
     def login
-      if @config.get(:credentials).nil?
+      if @config[:credentials].nil?
         username = ask("Username:")
         password = ask("Password:")
-        @config.set(:credentials, username: username, password: password)
+        @config[:credentials] = {username: username, password: password}
       end
-      @server = RemoteRepository.new(@config)
+      credentials = @config[:credentials]
+      @server = RemoteRepository.new(@config[:server], credentials[:username],
+                                      credentials[:password])
     end
   end
 end

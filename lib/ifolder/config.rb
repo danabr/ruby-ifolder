@@ -9,11 +9,11 @@ module IFolder
       @config = read_config rescue {}
     end
 
-    def get(key)
+    def [](key)
       @config[key]
     end
 
-    def set(key, value)
+    def []=(key, value)
       @config[key] = value
       write_config
     end
