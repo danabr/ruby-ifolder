@@ -1,13 +1,20 @@
 # encoding: utf-8
 require 'nokogiri'
-require 'ifolder/entry'
+require 'ifolder/remote/entry'
 
 module IFolder
-  class EntryParser
-    def self.parse(entries_xml)
-      document = Nokogiri::XML::Document.parse(entries_xml)
-      document.encoding = "utf-8"
-      document.xpath("//xmlns:iFolderEntry").map do |entry_xml|
+  module Remote
+    class EntryParser
+      def self.parse(entries_xml)
+        document = Nokogiri::XML::Document.parse(entries_xml)
+        document.encoding = "utf-8"
+        document.xpath("//xmlns:iFolderEntry").map do |entry_xml|
+          parse_entry(entry_xml)
+        end
+      end
+
+      private
+      def self.parse_entry(entry_xml)
         id = entry_xml.xpath("xmlns:ID/text()").to_s
         name = entry_xml.xpath("xmlns:Name/text()").to_s
         path = entry_xml.xpath("xmlns:Path/text()").to_s

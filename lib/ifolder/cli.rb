@@ -1,15 +1,15 @@
 # encoding: utf-8
 require 'thor'
 require 'ifolder/config'
-require 'ifolder/remote_repository'
-require 'ifolder/local_repository'
+require 'ifolder/remote/repository'
+require 'ifolder/local/repository'
 
 module IFolder
   class CLI < Thor
     def initialize(*args)
       super
       home = File.join(ENV["HOME"], "ifolder")
-      @local = LocalRepository.new(home)
+      @local = Local::Repository.new(home)
       @config = Config.new(File.join(home, ".config"))
     end
 
@@ -23,9 +23,9 @@ module IFolder
     end
     default_task :configure
 
-    desc "ls", "List files"
+    desc "ls", "List ifolders"
     def ls
-      login 
+      login
       @server.list.each do |ifolder|
         star = @local.exists?(ifolder) ? "*" : " "
         puts star + ifolder.name.ljust(20) + " " + ifolder.description
@@ -49,12 +49,16 @@ module IFolder
         if entry.directory?
           @local.mkdir(entry.path)
           entries += entry.entries
-        else 
-          @local.write_file(entry.path) do |file|
-            entry.content do |chunk|
-              file.write(chunk)
-            end
-          end
+        else
+          download_file(entry)
+        end
+      end
+    end
+
+    def download_file(entry)
+      @local.write_file(entry.path) do |file|
+        entry.content do |chunk|
+          file.write(chunk)
         end
       end
     end
@@ -67,8 +71,8 @@ module IFolder
         @config[:credentials] = {username: username, password: password}
       end
       credentials = @config[:credentials]
-      @server = RemoteRepository.new(@config[:server], credentials[:username],
-                                      credentials[:password])
+      @server = Remote::Repository.new(@config[:server], credentials[:username],
+                                        credentials[:password])
     end
   end
 end
