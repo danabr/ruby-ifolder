@@ -10,6 +10,7 @@ module IFolder
       super
       home = File.join(ENV["HOME"], "ifolder")
       @local = Local::Repository.new(home)
+      FileUtils.mkdir_p(home)
       @config = Config.new(File.join(home, ".config"))
     end
 
@@ -20,6 +21,7 @@ module IFolder
       end
       server = ask("Server domain name or IP:")
       @config[:server] = server
+      @config.save
     end
     default_task :configure
 
@@ -27,15 +29,22 @@ module IFolder
     def ls
       login
       @remote.list.each do |ifolder|
-        star = @local.exists?(ifolder) ? "*" : " "
+        star = @local.exists?(ifolder.name) ? "*" : " "
         puts star + ifolder.name.ljust(20) + " " + ifolder.description
       end
     end
 
     desc "download [name]", "Download the ifolder with the given name"
+    method_options force: :boolean
     def download(name)
       login
-      @local.clone(@remote.get(name), $stdout)
+      @local.clone(@remote.get(name))
+    end
+
+    desc "update [name]", "Fetch updates for the ifolder with the given name"
+    def update(name)
+      login
+      @local.update(@remote.get(name))
     end
 
     private
@@ -44,6 +53,7 @@ module IFolder
         username = ask("Username:")
         password = ask("Password:")
         @config[:credentials] = {username: username, password: password}
+        @config.save
       end
       credentials = @config[:credentials]
       @remote = Remote::Repository.new(@config[:server], credentials[:username],

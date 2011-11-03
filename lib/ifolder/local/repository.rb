@@ -1,5 +1,5 @@
 # encoding: utf-8
-require 'ifolder/local/entry.rb'
+require 'ifolder/local/ifolder'
 
 module IFolder
   module Local
@@ -8,49 +8,30 @@ module IFolder
         @home = home
       end
 
-      # Returns true if an ifolder of the given exists.
-      def exists?(ifolder)
-        path = File.join(@home, ifolder.name)
-        File.exists?(path) && File.directory?(path)
+      # Returns true if an ifolder of the given name exists.
+      def exists?(name)
+        get(name).exists?
       end
 
-      # Makes a clone of the given ifolder,
-      # overwriting any local files with the contents
-      # of the given repository.
-      def clone(ifolder, progress_tracker)
-        mkdir(ifolder.name)
-        download_ifolder(ifolder, progress_tracker)
+      # Returns an ifolder with the given name
+      def get(name)
+        path = File.join(@home, name)
+        IFolder.new(path)
       end
 
-      private
-      def mkdir(path)
-        FileUtils.mkdir_p(File.join(@home, path))
+      # Makes a clone of the given ifolder, overwriting any local
+      # files with the contents # of the given repository.
+      def clone(source)
+        local = get(source.name)
+        local.init unless local.exists?
+        local.clone(source)
       end
 
-      def download_ifolder(ifolder, progress_tracker)
-        entries = ifolder.entries
-        until entries.empty?
-          entry = entries.shift
-          progress_tracker.puts entry.path
-          if entry.directory?
-            mkdir(entry.path)
-            entries += entry.entries
-          else
-            download_file(entry)
-          end
-        end
-      end
-
-      def download_file(entry)
-        write_file(entry.path) do |file|
-          entry.content do |chunk|
-            file.write(chunk)
-          end
-        end
-      end
-
-      def write_file(path, &block)
-        File.open(File.join(@home, path), "wb", &block)
+      # Updates the files outdated in the ifolder with the given name
+      def update(source)
+        ifolder = get(source.name)
+        raise "No such ifolder: #{source.name}" unless ifolder.exists?
+        ifolder.update(source) 
       end
     end
   end

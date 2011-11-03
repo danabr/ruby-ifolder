@@ -4,14 +4,14 @@ require 'ifolder/remote/entry_parser'
 module IFolder
   module Remote
     class Entry
-      attr_reader :id, :path, :size
+      attr_reader :id, :path, :mtime
       attr_accessor :connection
 
-      def initialize(ifolder_id, id, path, size)
+      def initialize(ifolder_id, id, path, mtime)
         @ifolder_id = ifolder_id
         @id = id
         @path = path
-        @size = size
+        @mtime = mtime
       end
 
       def name
@@ -20,7 +20,7 @@ module IFolder
     end
 
     class DirectoryEntry < Entry
-      def initialize(ifolder_id, id, path, size)
+      def initialize(ifolder_id, id, path, mtime)
         super
       end
 
@@ -38,7 +38,7 @@ module IFolder
     class FileEntry <  Entry
       CHUNK_SIZE = 1024*1024
 
-      def initialize(ifolder_id, id, path, size)
+      def initialize(ifolder_id, id, path, mtime)
         super
       end
 
@@ -47,7 +47,6 @@ module IFolder
       end
 
       def content(&block)
-        return "" if size == "0"
         handle = "#{@ifolder_id}:#{id}"
         connection.call("OpenFileRead", ifolderID: @ifolder_id, entryID: id)
         begin

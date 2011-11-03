@@ -1,5 +1,6 @@
 # encoding: utf-8
 require 'nokogiri'
+require 'date'
 require 'ifolder/remote/entry'
 
 module IFolder
@@ -21,11 +22,11 @@ module IFolder
         ifolder_id = entry_xml.xpath("xmlns:iFolderID/text()").to_s
         is_directory = entry_xml.xpath("xmlns:IsDirectory/text()").to_s == "true"
         last_modified = entry_xml.xpath("xmlns:LastModified/text()").to_s
-        size = entry_xml.xpath("xmlns:Size/text()").to_s
+        last_modified = DateTime.parse(last_modified).to_time.to_f
         if is_directory
-          DirectoryEntry.new(ifolder_id, id, path, size)
+          DirectoryEntry.new(ifolder_id, id, path, last_modified)
         else
-          FileEntry.new(ifolder_id, id, path, size)
+          FileEntry.new(ifolder_id, id, path, last_modified)
         end
       end
     end
