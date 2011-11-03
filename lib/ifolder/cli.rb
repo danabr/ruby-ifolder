@@ -26,7 +26,7 @@ module IFolder
     desc "ls", "List ifolders"
     def ls
       login
-      @server.list.each do |ifolder|
+      @remote.list.each do |ifolder|
         star = @local.exists?(ifolder) ? "*" : " "
         puts star + ifolder.name.ljust(20) + " " + ifolder.description
       end
@@ -35,35 +35,10 @@ module IFolder
     desc "download [name]", "Download the ifolder with the given name"
     def download(name)
       login
-      ifolder = @server.get(name)
-      @local.mkdir(ifolder.name)
-      download_ifolder(ifolder)
+      @local.clone(@remote.get(name), $stdout)
     end
 
     private
-    def download_ifolder(ifolder)
-      entries = ifolder.entries
-      until entries.empty?
-        entry = entries.shift
-        puts entry.path
-        if entry.directory?
-          @local.mkdir(entry.path)
-          entries += entry.entries
-        else
-          download_file(entry)
-        end
-      end
-    end
-
-    def download_file(entry)
-      @local.write_file(entry.path) do |file|
-        entry.content do |chunk|
-          file.write(chunk)
-        end
-      end
-    end
-
-
     def login
       if @config[:credentials].nil?
         username = ask("Username:")
@@ -71,7 +46,7 @@ module IFolder
         @config[:credentials] = {username: username, password: password}
       end
       credentials = @config[:credentials]
-      @server = Remote::Repository.new(@config[:server], credentials[:username],
+      @remote = Remote::Repository.new(@config[:server], credentials[:username],
                                         credentials[:password])
     end
   end
